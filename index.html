@@ -1,0 +1,668 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fff7f2">
+  <title>Surprise Ulang Tahun!</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #382d48;
+      --muted: #847991;
+      --pink: #f27b9b;
+      --pink-dark: #df5e83;
+      --cream: #fffaf5;
+      --lavender: #eee8ff;
+      --yellow: #ffdb79;
+      --shadow: 0 22px 65px #59406b1c;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      overflow-x: hidden;
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse at 12% 18%, #ffe6ee 0, transparent 26rem),
+        radial-gradient(ellipse at 88% 84%, #e8e2ff 0, transparent 27rem),
+        var(--cream);
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+    }
+
+    button, input { font: inherit; }
+    button { color: inherit; }
+
+    .decor {
+      position: fixed;
+      z-index: -1;
+      pointer-events: none;
+      opacity: .8;
+      animation: bob 4s ease-in-out infinite;
+    }
+    .decor-one { top: 9%; left: 8%; font-size: 2rem; }
+    .decor-two { top: 18%; right: 9%; font-size: 1.7rem; animation-delay: -1s; }
+    .decor-three { bottom: 11%; left: 13%; font-size: 1.5rem; animation-delay: -2s; }
+    .decor-four { right: 12%; bottom: 17%; font-size: 2rem; animation-delay: -1.5s; }
+
+    .shell {
+      width: min(100% - 32px, 760px);
+      min-height: 100vh;
+      margin: auto;
+      display: grid;
+      place-items: center;
+      padding: 48px 0;
+    }
+
+    .card {
+      position: relative;
+      width: 100%;
+      padding: clamp(26px, 7vw, 58px);
+      overflow: hidden;
+      border: 1px solid #fff;
+      border-radius: 32px;
+      background: #ffffffd9;
+      box-shadow: var(--shadow);
+      text-align: center;
+      backdrop-filter: blur(12px);
+      animation: arrive .7s cubic-bezier(.2,.8,.2,1) both;
+    }
+
+    .screen { display: none; }
+    .screen.active { display: block; }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+    .eyebrow {
+      margin: 0 0 12px;
+      color: var(--pink-dark);
+      font-size: .76rem;
+      font-weight: 800;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+    h1, h2, p { margin-top: 0; }
+    h1, h2 {
+      margin-bottom: 14px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-weight: 700;
+      letter-spacing: -.035em;
+    }
+    h1 { font-size: clamp(2.4rem, 8vw, 4.5rem); line-height: 1.03; }
+    h2 { font-size: clamp(2rem, 6vw, 3.2rem); line-height: 1.1; }
+    .lead {
+      max-width: 470px;
+      margin: 0 auto 28px;
+      color: var(--muted);
+      font-size: 1.03rem;
+      line-height: 1.7;
+    }
+    .hero-emoji {
+      display: block;
+      margin: 0 auto 12px;
+      font-size: clamp(4rem, 14vw, 7rem);
+      line-height: 1.15;
+      filter: drop-shadow(0 10px 12px #f27b9b2b);
+      animation: bob 3.3s ease-in-out infinite;
+    }
+
+    .field {
+      display: block;
+      width: min(100%, 390px);
+      margin: 0 auto 15px;
+      padding: 16px 18px;
+      border: 2px solid #f1eaf2;
+      border-radius: 16px;
+      outline: none;
+      background: #fffdfd;
+      color: var(--ink);
+      text-align: center;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .field:focus { border-color: #f2a0b5; box-shadow: 0 0 0 4px #f27b9b1c; }
+
+    .button {
+      display: inline-flex;
+      min-height: 52px;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      padding: 14px 24px;
+      border: 0;
+      border-radius: 999px;
+      background: var(--pink);
+      box-shadow: 0 8px 18px #f27b9b38;
+      color: white;
+      cursor: pointer;
+      font-weight: 800;
+      transition: transform .18s, background .18s, box-shadow .18s;
+    }
+    .button:hover { transform: translateY(-2px); background: var(--pink-dark); box-shadow: 0 11px 22px #f27b9b45; }
+    .button:active { transform: translateY(0); }
+    .button:focus-visible, .answer:focus-visible, .star:focus-visible { outline: 3px solid #8064bf; outline-offset: 3px; }
+    .button.secondary { background: var(--lavender); box-shadow: none; color: #66558e; }
+    .button.secondary:hover { background: #e2d9ff; }
+    .hint { margin: 15px 0 0; color: #9c91a3; font-size: .85rem; }
+
+    .progress-wrap { margin: 0 auto 25px; }
+    .progress-label { display: flex; justify-content: space-between; margin-bottom: 8px; color: var(--muted); font-size: .82rem; font-weight: 700; }
+    .progress { height: 9px; overflow: hidden; border-radius: 10px; background: #f1edf3; }
+    .progress > span { display: block; width: 0; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #f8a5b8, #bba8f1); transition: width .45s ease; }
+
+    .game-panel {
+      width: min(100%, 490px);
+      margin: 24px auto 0;
+      padding: 20px;
+      border: 1px solid #f1eaf2;
+      border-radius: 22px;
+      background: #fffafc;
+    }
+    .game-title { margin: 0 0 7px; font-size: 1.07rem; font-weight: 800; }
+    .game-note { margin: 0 0 16px; color: var(--muted); font-size: .9rem; }
+    .star-field {
+      position: relative;
+      height: 190px;
+      overflow: hidden;
+      border-radius: 16px;
+      background: linear-gradient(145deg, #f5efff, #fff1f4);
+    }
+    .star {
+      position: absolute;
+      padding: 7px;
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+      font-size: 2rem;
+      line-height: 1;
+      transform: translate(-50%, -50%);
+      animation: twinkle 1s ease-in-out infinite alternate;
+    }
+    .star:hover { scale: 1.2; }
+    .game-status { min-height: 25px; margin: 12px 0 0; color: var(--pink-dark); font-size: .9rem; font-weight: 700; }
+    .answers { display: grid; gap: 10px; width: min(100%, 430px); margin: 22px auto 0; }
+    .answer {
+      padding: 14px 16px;
+      border: 2px solid #f1eaf2;
+      border-radius: 15px;
+      background: #fff;
+      cursor: pointer;
+      text-align: left;
+      transition: .18s ease;
+    }
+    .answer:hover { border-color: #f2a0b5; background: #fff8fa; transform: translateX(3px); }
+    .answer.correct { border-color: #a7d8b2; background: #f2fff4; }
+    .answer.wrong { animation: shake .28s linear; border-color: #f2a0b5; }
+
+    .gift-scene { margin: 22px auto 14px; perspective: 700px; }
+    .gift {
+      position: relative;
+      width: 190px;
+      height: 155px;
+      margin: 0 auto;
+      animation: gift-pop .7s .2s both;
+    }
+    .gift-base {
+      position: absolute;
+      right: 10px;
+      bottom: 0;
+      left: 10px;
+      height: 112px;
+      border-radius: 9px 9px 15px 15px;
+      background: linear-gradient(135deg, #ff9bb0, #ef6c91);
+      box-shadow: inset -12px 0 #d9587c24, 0 16px 22px #c46b8b25;
+    }
+    .gift-base::before {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 27px;
+      content: "";
+      background: #ffe083;
+      transform: translateX(-50%);
+    }
+    .gift-lid {
+      position: absolute;
+      z-index: 2;
+      top: 26px;
+      left: 0;
+      width: 190px;
+      height: 35px;
+      border-radius: 8px;
+      background: #ffadc0;
+      box-shadow: inset -10px 0 #d9587c18;
+      transform-origin: 12% 95%;
+    }
+    .gift-lid::after {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 27px;
+      content: "";
+      background: #ffe083;
+      transform: translateX(-50%);
+    }
+    .gift.open .gift-lid { animation: lid-open .9s .25s cubic-bezier(.2,.8,.2,1) forwards; }
+    .bow {
+      position: absolute;
+      z-index: 3;
+      top: 4px;
+      left: 50%;
+      width: 57px;
+      height: 33px;
+      transform: translateX(-50%);
+      transition: opacity .25s;
+    }
+    .bow::before, .bow::after {
+      position: absolute;
+      top: 0;
+      width: 29px;
+      height: 25px;
+      border: 7px solid #ffe083;
+      border-radius: 50% 50% 45% 45%;
+      content: "";
+    }
+    .bow::before { left: 0; transform: rotate(25deg); }
+    .bow::after { right: 0; transform: rotate(-25deg); }
+    .gift.open .bow { opacity: 0; }
+
+    .wish {
+      display: none;
+      margin: 18px auto 0;
+      animation: wish-in .8s .8s both;
+    }
+    .wish.visible { display: block; }
+    .wish-name { color: var(--pink-dark); }
+    .wish-copy { max-width: 480px; margin: 0 auto 25px; color: var(--muted); line-height: 1.75; }
+    .confetti { position: fixed; z-index: 5; top: -25px; width: 10px; height: 15px; pointer-events: none; animation: confetti-fall 3.4s linear forwards; }
+
+    .letter-scene { margin: 28px auto 18px; }
+    .envelope {
+      position: relative;
+      display: block;
+      width: min(100%, 300px);
+      height: 190px;
+      margin: 0 auto;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+      perspective: 700px;
+    }
+    .envelope:focus-visible { outline: 3px solid #8064bf; outline-offset: 6px; border-radius: 12px; }
+    .envelope-paper {
+      position: absolute;
+      z-index: 1;
+      right: 12%;
+      bottom: 18px;
+      left: 12%;
+      height: 145px;
+      padding: 18px;
+      border-radius: 8px;
+      background: #fffdf7;
+      box-shadow: 0 5px 16px #59406b18;
+      color: var(--pink-dark);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 1.05rem;
+      font-style: italic;
+      transform: translateY(95px);
+      transition: transform .7s cubic-bezier(.2,.8,.2,1);
+    }
+    .envelope-base {
+      position: absolute;
+      z-index: 2;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      height: 125px;
+      overflow: hidden;
+      border-radius: 12px;
+      background: linear-gradient(145deg, #ffb6c8, #f27b9b);
+      box-shadow: 0 14px 26px #c46b8b2b;
+      clip-path: polygon(0 0, 50% 58%, 100% 0, 100% 100%, 0 100%);
+    }
+    .envelope-flap {
+      position: absolute;
+      z-index: 3;
+      top: 65px;
+      left: 0;
+      width: 100%;
+      height: 100px;
+      background: #f58aa6;
+      clip-path: polygon(0 0, 50% 68%, 100% 0);
+      transform-origin: top;
+      transition: transform .55s ease, z-index 0s .25s;
+    }
+    .envelope-seal {
+      position: absolute;
+      z-index: 4;
+      top: 124px;
+      left: 50%;
+      display: grid;
+      width: 38px;
+      height: 38px;
+      place-items: center;
+      border-radius: 50%;
+      background: #fff0c2;
+      color: var(--pink-dark);
+      font-size: 1.15rem;
+      transform: translateX(-50%);
+      transition: opacity .2s;
+    }
+    .envelope.open .envelope-paper { transform: translateY(-42px); }
+    .envelope.open .envelope-flap { z-index: 0; transform: rotateX(180deg); }
+    .envelope.open .envelope-seal { opacity: 0; }
+    .letter-hint { margin: 0; color: var(--muted); font-size: .9rem; }
+    .letter-copy {
+      max-width: 490px;
+      margin: 27px auto 24px;
+      padding: clamp(22px, 5vw, 34px);
+      border: 1px solid #f5e8d9;
+      border-radius: 18px;
+      background: #fffdf7;
+      box-shadow: 0 12px 30px #59406b12;
+      color: #665a67;
+      line-height: 1.8;
+      text-align: left;
+      animation: wish-in .65s both;
+    }
+    .letter-copy[hidden] { display: none; }
+    .letter-copy p { margin-bottom: 14px; }
+    .letter-copy p:last-child { margin-bottom: 0; }
+    .letter-signoff { color: var(--pink-dark); font-family: Georgia, "Times New Roman", serif; font-size: 1.1rem; font-style: italic; }
+
+    @keyframes bob { 0%, 100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-10px) rotate(4deg); } }
+    @keyframes arrive { from { opacity: 0; transform: translateY(14px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    @keyframes twinkle { from { opacity: .72; rotate: -9deg; } to { opacity: 1; rotate: 9deg; } }
+    @keyframes shake { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+    @keyframes gift-pop { from { opacity: 0; transform: translateY(15px) scale(.85); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    @keyframes lid-open { to { transform: translate(-25px, -68px) rotate(-32deg); } }
+    @keyframes wish-in { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes confetti-fall { to { transform: translate(var(--drift), 110vh) rotate(760deg); opacity: .8; } }
+
+    @media (max-width: 520px) {
+      .shell { width: min(100% - 20px, 760px); padding: 20px 0; }
+      .card { padding: 32px 22px; border-radius: 25px; }
+      .game-panel { padding: 15px; }
+      .star-field { height: 175px; }
+      .decor-one { left: 3%; }
+      .decor-two { right: 3%; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <span class="decor decor-one" aria-hidden="true">✦</span>
+  <span class="decor decor-two" aria-hidden="true">♡</span>
+  <span class="decor decor-three" aria-hidden="true">✿</span>
+  <span class="decor decor-four" aria-hidden="true">✨</span>
+
+  <main class="shell">
+    <section class="card">
+      <div class="screen active" id="welcome">
+        <span class="hero-emoji" aria-hidden="true">🎂</span>
+        <p class="eyebrow">ada kejutan kecil buat kamu</p>
+        <h1>Hai, kamu!</h1>
+        <p class="lead">Sebelum masuk, isi dulu nama panggilanmu ya. Ada misi seru dan hadiah spesial yang menunggu! 💌</p>
+        <form id="login-form">
+          <label class="sr-only" for="recipient-name">Nama panggilan</label>
+          <input class="field" id="recipient-name" name="name" maxlength="32" autocomplete="given-name" placeholder="Nama panggilan kamu..." required>
+          <button class="button" type="submit">Masuk ke kejutan <span aria-hidden="true">→</span></button>
+        </form>
+        <p class="hint">Tenang, ini bukan ujian kok. Cuma butuh senyum 😊</p>
+      </div>
+
+      <div class="screen" id="intro">
+        <span class="hero-emoji" aria-hidden="true">🗝️</span>
+        <p class="eyebrow">portal rahasia terbuka</p>
+        <h2>Halo, <span class="recipient"></span>!</h2>
+        <p class="lead">Kumpulkan bintang dan jawab satu pertanyaan kecil untuk membuka hadiahmu. Siap-siap ya! 🎁</p>
+        <button class="button" type="button" data-go="stars">Mulai petualangan <span aria-hidden="true">✨</span></button>
+      </div>
+
+      <div class="screen" id="stars">
+        <div class="progress-wrap">
+          <div class="progress-label"><span>Misi 1 dari 2</span><span>⭐ <span id="star-count">0</span>/5</span></div>
+          <div class="progress" aria-label="Progres misi"><span id="progress-bar"></span></div>
+        </div>
+        <p class="eyebrow">tangkap bintang jatuh</p>
+        <h2>Bintang buat <span class="recipient"></span>!</h2>
+        <p class="lead">Klik bintang-bintang yang muncul sampai terkumpul lima. Semangat! ⭐</p>
+        <div class="game-panel">
+          <p class="game-title">Arena bintang</p>
+          <p class="game-note">Cari lalu klik bintangnya sebelum pindah!</p>
+          <div class="star-field" id="star-field" aria-label="Area permainan menangkap bintang"></div>
+          <p class="game-status" id="star-status" aria-live="polite">Ayo klik bintang pertama!</p>
+        </div>
+      </div>
+
+      <div class="screen" id="quiz">
+        <div class="progress-wrap">
+          <div class="progress-label"><span>Misi 2 dari 2</span><span>💖 tinggal sedikit lagi!</span></div>
+          <div class="progress"><span style="width: 68%"></span></div>
+        </div>
+        <p class="eyebrow">pertanyaan super penting</p>
+        <h2>Siapa yang paling pantas dapat kue hari ini?</h2>
+        <p class="lead">Pilih jawaban yang paling benar. Petunjuk: jawabannya ada di halaman ini 😉</p>
+        <div class="answers" id="answers">
+          <button class="answer" type="button" data-correct="false">Kucing tetangga 🐱</button>
+          <button class="answer" type="button" data-correct="true"><span class="recipient"></span> yang paling kece 🎉</button>
+          <button class="answer" type="button" data-correct="false">Semua orang, tapi kuenya buat aku 🍰</button>
+        </div>
+        <p class="game-status" id="quiz-status" aria-live="polite"></p>
+      </div>
+
+      <div class="screen" id="gift">
+        <p class="eyebrow">misi selesai!</p>
+        <h2>Satu hadiah kecil...</h2>
+        <p class="lead" id="gift-intro">Makasih sudah main! Ada sesuatu yang spesial di dalamnya.</p>
+        <div class="gift-scene" aria-label="Kotak hadiah terbuka">
+          <div class="gift" id="gift-box">
+            <div class="gift-base"></div>
+            <div class="gift-lid"></div>
+            <div class="bow"></div>
+          </div>
+        </div>
+        <div class="wish" id="birthday-wish" aria-live="polite">
+          <p class="eyebrow">hari spesialmu</p>
+          <h1>Selamat Ulang Tahun,<br><span class="wish-name recipient"></span>! 🎂</h1>
+          <p class="wish-copy">Semoga hari-harimu dipenuhi tawa, hal-hal baik, dan orang-orang yang sayang sama kamu. Semoga semua harapanmu satu per satu jadi nyata. Kamu pantas bahagia, hari ini dan setiap hari! 💖</p>
+          <button class="button" id="show-letter" type="button">Ada surat kecil buat kamu 💌</button>
+          <button class="button secondary" id="replay" type="button">Main lagi dari awal ↻</button>
+        </div>
+      </div>
+
+      <div class="screen" id="letter">
+        <p class="eyebrow">dibuka khusus untukmu</p>
+        <h2>Sebuah surat kecil 💌</h2>
+        <p class="lead">Ada beberapa kata yang ingin disampaikan. Klik amplopnya, ya.</p>
+        <div class="letter-scene">
+          <button class="envelope" id="letter-envelope" type="button" aria-label="Buka surat" aria-expanded="false" aria-controls="letter-copy">
+            <span class="envelope-paper" aria-hidden="true">Untuk <span class="recipient"></span>,</span>
+            <span class="envelope-base" aria-hidden="true"></span>
+            <span class="envelope-flap" aria-hidden="true"></span>
+            <span class="envelope-seal" aria-hidden="true">♡</span>
+          </button>
+          <p class="letter-hint" id="letter-hint">Ketuk amplopnya untuk membuka surat ✨</p>
+        </div>
+        <article class="letter-copy" id="letter-copy" hidden>
+          <p>Untuk <strong class="recipient"></strong>,</p>
+          <p>Selamat ulang tahun! Semoga di umur yang baru ini, kamu selalu dikelilingi hal-hal baik, tawa yang tulus, dan orang-orang yang menyayangimu.</p>
+          <p>Terima kasih sudah menjadi dirimu sendiri—seseorang yang istimewa dan pantas mendapatkan banyak kebahagiaan. Semoga semua harapan kecil maupun besar pelan-pelan menemukan jalannya untuk jadi nyata.</p>
+          <p>Jangan lupa menikmati hari ini, ya. Kamu layak dirayakan, hari ini dan setiap hari. 💖</p>
+          <p class="letter-signoff">Dengan banyak doa baik ✨</p>
+        </article>
+        <button class="button secondary" id="back-to-wish" type="button">Kembali ke ucapan ulang tahun</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      const screens = [...document.querySelectorAll(".screen")];
+      const nameInput = document.getElementById("recipient-name");
+      const recipientLabels = [...document.querySelectorAll(".recipient")];
+      let recipientName = "";
+      let starsCaught = 0;
+      let starTimer;
+
+      function showScreen(id) {
+        screens.forEach((screen) => screen.classList.toggle("active", screen.id === id));
+      }
+
+      function updateName(name) {
+        recipientName = name.trim().slice(0, 32);
+        recipientLabels.forEach((label) => { label.textContent = recipientName; });
+      }
+
+      document.getElementById("login-form").addEventListener("submit", (event) => {
+        event.preventDefault();
+        if (!nameInput.value.trim()) {
+          nameInput.focus();
+          return;
+        }
+        updateName(nameInput.value);
+        showScreen("intro");
+      });
+
+      document.querySelector('[data-go="stars"]').addEventListener("click", () => {
+        starsCaught = 0;
+        document.getElementById("star-count").textContent = "0";
+        document.getElementById("progress-bar").style.width = "0";
+        document.getElementById("star-status").textContent = "Ayo klik bintang pertama!";
+        showScreen("stars");
+        placeStar();
+      });
+
+      function placeStar() {
+        const field = document.getElementById("star-field");
+        field.replaceChildren();
+        const star = document.createElement("button");
+        star.type = "button";
+        star.className = "star";
+        star.textContent = "⭐";
+        star.setAttribute("aria-label", "Tangkap bintang");
+        star.style.left = `${12 + Math.random() * 76}%`;
+        star.style.top = `${18 + Math.random() * 64}%`;
+        star.addEventListener("click", () => {
+          if (starTimer) clearTimeout(starTimer);
+          starsCaught += 1;
+          document.getElementById("star-count").textContent = String(starsCaught);
+          document.getElementById("progress-bar").style.width = `${starsCaught * 20}%`;
+          if (starsCaught === 5) {
+            field.replaceChildren();
+            document.getElementById("star-status").textContent = "Yeay! Lima bintang berhasil dikumpulkan! ✨";
+            window.setTimeout(() => showScreen("quiz"), 950);
+          } else {
+            document.getElementById("star-status").textContent = `Bagus! ${5 - starsCaught} bintang lagi...`;
+            placeStar();
+          }
+        }, { once: true });
+        field.append(star);
+        starTimer = window.setTimeout(() => {
+          if (document.getElementById("stars").classList.contains("active")) {
+            document.getElementById("star-status").textContent = "Ups, bintangnya pindah! Coba tangkap lagi 😄";
+            placeStar();
+          }
+        }, 1700);
+      }
+
+      document.getElementById("answers").addEventListener("click", (event) => {
+        const answer = event.target.closest(".answer");
+        if (!answer) return;
+        if (answer.dataset.correct === "true") {
+          answer.classList.add("correct");
+          document.getElementById("quiz-status").textContent = "Tepat sekali! Hadiahmu sedang disiapkan... 🎁";
+          document.querySelectorAll(".answer").forEach((button) => { button.disabled = true; });
+          window.setTimeout(() => {
+            showScreen("gift");
+            window.setTimeout(openGift, 1400);
+          }, 900);
+        } else {
+          answer.classList.remove("wrong");
+          void answer.offsetWidth;
+          answer.classList.add("wrong");
+          document.getElementById("quiz-status").textContent = "Belum tepat nih, coba pilih lagi! 😋";
+        }
+      });
+
+      function openGift() {
+        if (!document.getElementById("gift").classList.contains("active")) return;
+        document.getElementById("gift-box").classList.add("open");
+        document.getElementById("gift-intro").textContent = "Kejutannya dibuka... 3, 2, 1! 💫";
+        window.setTimeout(() => {
+          document.getElementById("birthday-wish").classList.add("visible");
+          document.getElementById("gift-intro").textContent = "Semoga senyummu hari ini makin lebar! 💖";
+          celebrate();
+        }, 750);
+      }
+
+      document.getElementById("show-letter").addEventListener("click", () => {
+        showScreen("letter");
+      });
+
+      document.getElementById("letter-envelope").addEventListener("click", (event) => {
+        const envelope = event.currentTarget;
+        const isOpen = envelope.classList.toggle("open");
+        envelope.setAttribute("aria-expanded", String(isOpen));
+        envelope.setAttribute("aria-label", isOpen ? "Tutup surat" : "Buka surat");
+        document.getElementById("letter-copy").hidden = !isOpen;
+        document.getElementById("letter-hint").hidden = isOpen;
+      });
+
+      document.getElementById("back-to-wish").addEventListener("click", () => {
+        showScreen("gift");
+      });
+
+      function celebrate() {
+        const colors = ["#f27b9b", "#ffdb79", "#b9a7f2", "#99d8b0", "#ffad76"];
+        for (let index = 0; index < 70; index += 1) {
+          const piece = document.createElement("span");
+          piece.className = "confetti";
+          piece.setAttribute("aria-hidden", "true");
+          piece.style.left = `${Math.random() * 100}vw`;
+          piece.style.backgroundColor = colors[index % colors.length];
+          piece.style.borderRadius = Math.random() > .5 ? "50%" : "2px";
+          piece.style.setProperty("--drift", `${Math.random() * 180 - 90}px`);
+          piece.style.animationDelay = `${Math.random() * .8}s`;
+          document.body.append(piece);
+          window.setTimeout(() => piece.remove(), 4500);
+        }
+      }
+
+      document.getElementById("replay").addEventListener("click", () => {
+        if (starTimer) clearTimeout(starTimer);
+        document.querySelectorAll(".confetti").forEach((piece) => piece.remove());
+        document.getElementById("gift-box").classList.remove("open");
+        document.getElementById("birthday-wish").classList.remove("visible");
+        document.getElementById("letter-envelope").classList.remove("open");
+        document.getElementById("letter-envelope").setAttribute("aria-expanded", "false");
+        document.getElementById("letter-envelope").setAttribute("aria-label", "Buka surat");
+        document.getElementById("letter-copy").hidden = true;
+        document.getElementById("letter-hint").hidden = false;
+        document.getElementById("gift-intro").textContent = "Makasih sudah main! Ada sesuatu yang spesial di dalamnya.";
+        document.querySelectorAll(".answer").forEach((button) => {
+          button.disabled = false;
+          button.classList.remove("correct", "wrong");
+        });
+        document.getElementById("quiz-status").textContent = "";
+        nameInput.value = recipientName;
+        showScreen("welcome");
+      });
+    })();
+  </script>
+</body>
+</html>
